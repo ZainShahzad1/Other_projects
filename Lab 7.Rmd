@@ -1,0 +1,86 @@
+---
+title: "Lab 7"
+author: "Zain Shahzad"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Instructions
+
+**Exercises:**  1,4 (Pg. 358); 1,4 (Pgs. 371)
+
+**Submission:** Submit via an electronic document on Sakai. Must be submitted as a HTML file generated in RStudio. All assigned problems are chosen according to the textbook *R for Data Science*. You do not need R code to answer every question. If you answer without using R code, delete the code chunk. If the question requires R code, make sure you display R code. If the question requires a figure, make sure you display a figure. A lot of the questions can be answered in written response, but require R code and/or figures for understanding and explaining.
+
+```{r, include=FALSE}
+library(tidyverse)
+library(modelr)
+data("sim1")
+```
+
+
+# Chapter 18 (Pg. 358)
+
+##  Exercise 1
+```{r}
+mod1 <- loess(y ~ x, data = sim1)
+sim1 %>% 
+  add_predictions(mod1) %>% 
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_line(aes(y = pred), colour = "red")
+sim1 %>% 
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth()
+```
+
+##  Exercise 4
+```{r}
+new_data <- tibble(
+  y = rnorm(100),
+  x = y + rnorm(100, mean = 5),
+  z = y * runif(100, max = 100)
+)
+mod1 <- lm(y ~ x, data = new_data)
+mod2 <- lm(y ~ z, data = new_data)
+final_data <-
+  new_data %>% 
+  gather_predictions(mod1, mod2)
+  
+final_data %>% 
+  ggplot(aes(pred, colour = model)) +
+  geom_freqpoly()
+```
+
+# Chapter 18 (Pg. 371)
+
+##  Exercise 1
+```{r}
+mod2a <- lm(y ~ x - 1, data = sim2)
+mod2 <- lm(y ~ x, data = sim2)
+grid <- sim2 %>%
+  data_grid(x) %>%
+  spread_predictions(mod2, mod2a)
+grid
+```
+The predictions are the same
+##  Exercise 4
+```{r}
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+sim4_mods <- gather_residuals(sim4, mod1, mod2)
+ggplot(sim4_mods, aes(x = resid, colour = model)) +
+  geom_freqpoly(binwidth = 0.5) +
+  geom_rug()
+ggplot(sim4_mods, aes(x = abs(resid), colour = model)) +
+  geom_freqpoly(binwidth = 0.5) +
+  geom_rug()
+sim4_mods %>%
+  group_by(model) %>%
+  summarise(resid = sd(resid))
+```
+The standard deviation of the residuals of mod2 are smaller than mod1

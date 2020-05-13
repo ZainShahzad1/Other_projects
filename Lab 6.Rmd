@@ -1,0 +1,176 @@
+---
+title: "Lab 6"
+author: "FIRSTNAME LASTNAME"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Instructions
+
+**Exercises:**  4 (Pg. 302); 1 (Pgs. 316-317); 1 (Pgs. 328-329); 1, 2 (Pgs. 353-354)
+
+**Submission:** Submit via an electronic document on Sakai. Must be submitted as a HTML file generated in RStudio. All assigned problems are chosen according to the textbook *R for Data Science*. You do not need R code to answer every question. If you answer without using R code, delete the code chunk. If the question requires R code, make sure you display R code. If the question requires a figure, make sure you display a figure. A lot of the questions can be answered in written response, but require R code and/or figures for understanding and explaining.
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+# Chapter 16 (Pg. 302)
+
+##  Exercise 4
+
+### a)
+```{r}
+returner <- function(x) {
+  x[[length(x)]]
+}
+returner(1:10)
+```
+
+### b)
+```{r}
+even_num <- function(x) {
+  x[seq(2, length(x), by = 2)]
+}
+even_num(1:10)
+```
+
+### c)
+```{r}
+except_last <- function(x) {
+  x[-length(x)]
+}
+except_last(1:10)
+```
+
+### d)
+```{r}
+even_numbers <- function(x) {
+  x[!is.na(x) & x %% 2 == 0]
+}
+even_numbers(sample(c(NA, 1:100), 99))
+```
+
+# Chapter 17 (Pgs. 316-317)
+
+##  Exercise 1
+
+### a)
+```{r}
+    output <- vector("double", ncol(mtcars))
+    names(output) <- names(mtcars)
+    for (i in names(mtcars)) {
+      output[i] <- mean(mtcars[[i]])
+    }
+    output
+```
+
+### b)
+```{r}
+    output <- vector("list", ncol(nycflights13::flights))
+    names(output) <- names(nycflights13::flights)
+    for (i in names(nycflights13::flights)) {
+      output[[i]] <- class(nycflights13::flights[[i]])
+    }
+    output
+```
+
+### c)
+```{r}
+    data("iris")
+    iris_uniq <- vector("double", ncol(iris))
+    names(iris_uniq) <- names(iris)
+    for (i in names(iris)) {
+      iris_uniq[i] <- length(unique(iris[[i]]))
+    }
+    iris_uniq
+```
+
+### d)
+```{r}
+
+    n <- 10
+    mu <- c(-10, 0, 10, 100)
+    normals <- vector("list", length(mu))
+    for (i in seq_along(normals)) {
+      normals[[i]] <- rnorm(n, mean = mu[i])
+    }
+    normals
+```
+
+# Chapter 17 (Pgs. 328-329)
+
+##  Exercise 1
+
+### a)
+```{r}
+looper <- function(the_type, object, fun) {
+  empty_vec = vector(the_type, length(object))
+  for (every_column in seq_along(object)) {
+    empty_vec[every_column] <- fun(object[[every_column]])  
+  }
+  
+  empty_vec
+}
+looper("numeric", mtcars, mean)
+
+```
+
+### b)
+```{r}
+library(nycflights13)
+
+looper("character", flights, class)
+
+```
+
+### c)
+```{r}
+looper("numeric", iris, function(x) sum(table(unique(x))))
+
+```
+
+### d)
+```{r}
+ten_draws <- function(x) rnorm(10, mean = x)
+map(c(-10, 0, 10, 100), ten_draws)
+```
+
+# Chapter 18 (Pgs. 353-354)
+
+##  Exercise 1
+```{r}
+set.seed(2131)
+create_random <- function() {
+  tibble(
+    x = rep(1:10, each = 3),
+    y = x * 1.5 + 6 + rt(length(x), df = 2)
+  )
+}
+setNames(1:6, paste0("dt", 1:4)) %>% 
+  map(~ create_random()) %>%
+  enframe() %>% 
+  unnest() %>% 
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", colour = "black", se = FALSE) +
+  facet_wrap(~ name, scales = "free_y")
+```
+The slope changes depending on the outliers. A better approach could be to used something like a root median squared error.
+
+##  Exercise 2
+```{r}
+model1 <- function(a, data) {
+  a[1] + data$x * a[2]
+}
+measure_distance <- function(mod, data) {
+  diff <- data$y - model1(mod, data)
+  mean(abs(diff))
+}
+```
