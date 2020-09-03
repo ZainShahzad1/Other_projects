@@ -1,5 +1,5 @@
 ---
-title: "Lab 6"
+title: "Flights Data Analysis"
 author: "FIRSTNAME LASTNAME"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output:
@@ -11,21 +11,12 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Instructions
-
-**Exercises:**  4 (Pg. 302); 1 (Pgs. 316-317); 1 (Pgs. 328-329); 1, 2 (Pgs. 353-354)
-
-**Submission:** Submit via an electronic document on Sakai. Must be submitted as a HTML file generated in RStudio. All assigned problems are chosen according to the textbook *R for Data Science*. You do not need R code to answer every question. If you answer without using R code, delete the code chunk. If the question requires R code, make sure you display R code. If the question requires a figure, make sure you display a figure. A lot of the questions can be answered in written response, but require R code and/or figures for understanding and explaining.
 
 ```{r, include=FALSE}
 library(tidyverse)
 ```
 
-# Chapter 16 (Pg. 302)
 
-##  Exercise 4
-
-### a)
 ```{r}
 returner <- function(x) {
   x[[length(x)]]
@@ -33,7 +24,7 @@ returner <- function(x) {
 returner(1:10)
 ```
 
-### b)
+
 ```{r}
 even_num <- function(x) {
   x[seq(2, length(x), by = 2)]
@@ -41,7 +32,7 @@ even_num <- function(x) {
 even_num(1:10)
 ```
 
-### c)
+
 ```{r}
 except_last <- function(x) {
   x[-length(x)]
@@ -57,11 +48,7 @@ even_numbers <- function(x) {
 even_numbers(sample(c(NA, 1:100), 99))
 ```
 
-# Chapter 17 (Pgs. 316-317)
 
-##  Exercise 1
-
-### a)
 ```{r}
     output <- vector("double", ncol(mtcars))
     names(output) <- names(mtcars)
@@ -71,7 +58,6 @@ even_numbers(sample(c(NA, 1:100), 99))
     output
 ```
 
-### b)
 ```{r}
     output <- vector("list", ncol(nycflights13::flights))
     names(output) <- names(nycflights13::flights)
@@ -81,7 +67,6 @@ even_numbers(sample(c(NA, 1:100), 99))
     output
 ```
 
-### c)
 ```{r}
     data("iris")
     iris_uniq <- vector("double", ncol(iris))
@@ -92,7 +77,6 @@ even_numbers(sample(c(NA, 1:100), 99))
     iris_uniq
 ```
 
-### d)
 ```{r}
 
     n <- 10
@@ -104,11 +88,6 @@ even_numbers(sample(c(NA, 1:100), 99))
     normals
 ```
 
-# Chapter 17 (Pgs. 328-329)
-
-##  Exercise 1
-
-### a)
 ```{r}
 looper <- function(the_type, object, fun) {
   empty_vec = vector(the_type, length(object))
@@ -122,7 +101,7 @@ looper("numeric", mtcars, mean)
 
 ```
 
-### b)
+
 ```{r}
 library(nycflights13)
 
@@ -130,21 +109,19 @@ looper("character", flights, class)
 
 ```
 
-### c)
+
 ```{r}
 looper("numeric", iris, function(x) sum(table(unique(x))))
 
 ```
 
-### d)
+
 ```{r}
 ten_draws <- function(x) rnorm(10, mean = x)
 map(c(-10, 0, 10, 100), ten_draws)
 ```
 
-# Chapter 18 (Pgs. 353-354)
 
-##  Exercise 1
 ```{r}
 set.seed(2131)
 create_random <- function() {
@@ -164,7 +141,7 @@ setNames(1:6, paste0("dt", 1:4)) %>%
 ```
 The slope changes depending on the outliers. A better approach could be to used something like a root median squared error.
 
-##  Exercise 2
+
 ```{r}
 model1 <- function(a, data) {
   a[1] + data$x * a[2]
