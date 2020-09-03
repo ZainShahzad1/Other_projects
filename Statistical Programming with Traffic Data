@@ -1,0 +1,249 @@
+---
+title: "Analysis 3: Statistical Programming with Traffic Data"
+author: "Zain Shahzad"
+date:  "`r format(Sys.time(), 'March 30th, 2020')`"
+output: html_document
+---
+
+
+```{r setup, include=F}
+options(scipen=999)
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+#Introduction
+
+Sensors are used by traffic managment systems across the world to monitor the flow of vehicular traffic in urban road systems. Two metrics, occupancy and volume, indicate the quality of traffic flow. Occupancy is a variable that is between 0 an 100 and measures the percentage of time a sensor is blocked by a vehicle. Volume is a variable which represents the number of vehicles that pass a sensor in a period of time. The datasets "April_Occupancy_3.csv" and "April_Volume_3.csv" record 3-minute occupancy and volume measures for Monday through Friday in the month of April for 7 sensor locations in Athens, Greece. 
+
+```{r,message=F}
+DATA1=as.tibble(read.csv("April_Occupancy_3.csv"))
+DATA2=as.tibble(read.csv("April_Volume_3.csv"))
+head(DATA1)
+head(DATA2)
+```
+
+
+
+
+##Part 1: Getting Day Names
+
+We want to start by creating a factor variable called `DAYNAME` that contains the abbreviated day names "M", "T", "W","Th","F". Currently, the unique values in `DAY` are `r unique(DATA1$DAY)`. Think about which of these days correspond to their appropriate abbreviated names. The first element in `DAY`, which is *3*, corresponds to "M". 
+
+
+
+```{r} 
+set.seed(216) #DO NOT CHANGE
+x=sample(DATA1$DAY,1000) #DO NOT CHANGE
+print(x[1:20]) #DO NOT CHANGE
+```
+
+
+Code and Output:
+```{r,eval=T}
+y = rep(NA,length(x)) #DO NOT CHANGE
+
+for (i in seq_along(x)){
+  y[i] =  if(x[i] %in% c(3,10,17,24)){
+              "M"
+          }else if(x[i] %in% c(4,11,18,25)){
+              "T"
+          }else if(x[i] %in% c(5,12,19,26)){
+              "W"
+          }else if(x[i] %in% c(6,13,20,27)){
+              "Th"
+          }else{
+              "F"
+          }
+}
+
+print(y[1:20]) #DO NOT CHANGE
+```
+
+
+```{r,eval=T}
+x = DATA1$DAY #DO NOT CHANGE
+
+for (i in seq_along(x)){
+  y[i] =  if(x[i] %in% c(3,10,17,24)){
+              "M"
+          }else if(x[i] %in% c(4,11,18,25)){
+              "T"
+          }else if(x[i] %in% c(5,12,19,26)){
+              "W"
+          }else if(x[i] %in% c(6,13,20,27)){
+              "Th"
+          }else{
+              "F"
+          }
+}
+
+y.factor = factor(y, levels = c("M", "T", "W", "Th", "F"), ordered=TRUE)
+print(y.factor[1:20]) #DO NOT CHANGE
+```
+
+```{r,eval=T}
+DAYNAME.func = function(data){
+  
+  for (i in seq_along(x)){
+  y[i] =  if(data$DAY[i] %in% c(3,10,17,24)){
+              "M"
+          }else if(x[i] %in% c(4,11,18,25)){
+              "T"
+          }else if(x[i] %in% c(5,12,19,26)){
+              "W"
+          }else if(x[i] %in% c(6,13,20,27)){
+              "Th"
+          }else{
+              "F"
+          }
+  }
+  
+  y.factor = factor(y, levels = c("M", "T", "W", "Th", "F"), ordered=TRUE)
+  return(y.factor)
+}
+  
+  
+DATA1$DAYNAME = DAYNAME.func(DATA1) #DO NOT CHANGE
+DATA2$DAYNAME = DAYNAME.func(DATA2) #DO NOT CHANGE
+head(DATA1) #DO NOT CHANGE
+head(DATA2) #DO NOT CHANGE
+```
+
+```{r,warning=F,eval=T}
+#DO NOT CHANGE ANY OF THIS CODE
+SUB.DATA = DATA1 %>% select("L101",DAY,DAYNAME) %>% filter(DAYNAME=="M")
+plot=ggplot(data=SUB.DATA) + 
+      geom_line(aes(x=1:dim(SUB.DATA)[1],y=get("L101"),color=as.factor(DAY))) + 
+      theme_minimal() + xlab("Time") + guides(color=guide_legend(title="Day in April"))+
+      ylab("L101") + ggtitle(paste("Plot for ","M",sep=""))
+plot
+```
+
+
+```{r,eval=T}
+DAYPLOT.func=function(data,sensor,dayabbrev){
+  
+  SUB.DATA = data %>% select(sensor,DAY, DAYNAME) %>% filter(DAYNAME == dayabbrev)
+  plot=ggplot(data=SUB.DATA) + 
+      geom_line(aes(x=1:dim(SUB.DATA)[1],y=get(sensor),color=as.factor(DAY))) + 
+      theme_minimal() + xlab("Time") + guides(color=guide_legend(title="Day in April"))+
+      ylab(sensor) + ggtitle(paste("Plot for ",dayabbrev,sep=""))
+  
+  return(plot)
+}
+```
+
+```{r,eval=T}
+DAYPLOT.func(data=DATA2,sensor="L102",dayabbrev="M") 
+```
+
+
+
+```{r}
+OUTPUT=DATA2 %>% group_by(DAY) %>% select("L103",DAY) %>% summarize(median=median(get("L103")),IQR=IQR(get("L103"))) #DO NOT CHANGE
+head(OUTPUT) #DO NOT CHANGE
+ggplot(data=OUTPUT) + geom_line(aes(x=DAY,y=median)) + theme_minimal() #DO NOT CHANGE
+```
+
+```{r}
+#DO NOT CHANGE ANY OF THIS CODE
+aprilday=10
+
+id.day=which(DATA2$DAY==aprilday)
+subdata1=DATA2[id.day,]
+id.sensor=which(names(DATA2)=="L103")
+subdata2=subdata1[[id.sensor]]
+medIQRsum=c(aprilday,median(subdata2),IQR(subdata2))
+
+medIQRsum
+```
+
+
+
+```{r,eval=T}
+TRAFFICSUM.func = function(aprilday){
+  
+ id.day=which(DATA2$DAY==aprilday)
+subdata1=DATA2[id.day,]
+id.sensor=which(names(DATA2)=="L103")
+subdata2=subdata1[[id.sensor]]
+medIQRsum=c(aprilday,median(subdata2),IQR(subdata2))
+  
+  return(medIQRsum)
+}
+TRAFFICSUM.func(aprilday=10) #DO NOT CHANGE
+```
+
+
+```{r,eval=T}
+OUTPUT.A=NULL #DO NOT CHANGE
+
+for(k in unique(DATA2$DAY)){
+  
+ OUTPUT.A= rbind(OUTPUT, TRAFFICSUM.func(k))
+}
+
+head(OUTPUT.A) #DO NOT CHANGE
+```
+
+```{r,eval=T}
+OUTPUT.B=as.tibble(matrix(NA,20,3)) #DO NOT CHANGE
+names(OUTPUT.B)=c("DAY","median","IQR") #DO NOT CHANGE
+
+for(k in unique(DATA2$DAY)){
+
+   OUTPUT.B[which(OUTPUT==k),] = TRAFFICSUM.func(k)
+  
+}
+head(OUTPUT.B) #DO NOT CHANGE
+```
+
+
+
+
+```{r}
+OCC=DATA1[,1:7] #DO NOT CHANGE
+VOL=DATA2[,1:7] #DO NOT CHANGE
+```
+
+
+
+```{r,eval=T}
+MED.AGG.OCC = apply(OCC, 1, median)
+MED.AGG.VOL = apply(VOL, 1, median)
+
+plot(MED.AGG.OCC,type="l") #DO NOT CHANGE
+plot(MED.AGG.VOL,type="l") #DO NOT CHANGE
+```
+
+
+```{r}
+x=c(35,27,28,40)    #DO NOT CHANGE
+
+range=max(x)-min(x) #DO NOT CHANGE
+print(range)        #DO NOT CHANGE
+```
+
+
+```{r,eval=T}
+#Function
+RANGE.func=function(x){
+
+  range=max(x)-min(x)
+  
+}
+
+#Output
+try = c(8,14,20,25,26)
+print(try)
+print(RANGE.func(try))
+```
+
+```{r,eval=T}
+RANGE.AGG.OCC = apply(OCC, 1, RANGE.func)
+RANGE.AGG.VOL = apply(VOL, 1, RANGE.func)
+
+plot(RANGE.AGG.OCC,type="l") #DO NOT CHANGE
+plot(RANGE.AGG.VOL,type="l") #DO NOT CHANGE
+```
